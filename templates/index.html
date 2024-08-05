@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" href="static/candlestick-chart.png" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('/static/bgimg2.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+        .navbar {
+            background-color: black;
+        }
+        .navbar-brand {
+            color: #fff !important;
+        }
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 30%;
+            height: 30%;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .form-inline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .form-inline label {
+            margin-bottom: 0;
+        }
+        .form-inline input {
+            width: auto;
+        }
+        #plot-image {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        #ranking {
+            margin-top: 20px;
+        }
+        .hero {
+            text-align: center;
+            color: white;
+            padding: 100px 0;
+        }
+        .hero h1 {
+            font-size: 4em;
+            font-weight: bold;
+        }
+        .hero p {
+            font-size: 1.5em;
+        }
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+            size: 20px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 30%;
+            text-align: center;
+            size: 20px;
+        }
+        .card img {
+            width: 100%;
+            border-radius: 10px;
+            width: 50%;
+            height: 70%;
+        }
+        .card h2 {
+            margin-top: 10px;
+        }
+        #prediction {
+            margin-top: 20px;
+            display: none;
+        }
+        #prediction h2 {
+            text-align: center;
+        }
+        #prediction ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #prediction ul li {
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Stock Analysis App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://localhost:8443/index.html">Banking Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://localhost:8443/add-user.html">Onboard User</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://localhost:8443/transfer.html">Transfer Funds</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://localhost:8443/balance.html">View User</a>
+                </li>
+                
+            </ul>
+        </div>
+    </nav>
+    <div class="hero">
+        <h1>STOCK ANALYSIS</h1>
+        <p>COMPARE, RANK, PLOT AND ANALYSE DIFFERENT COMPANY STOCKS</p>
+    </div>
+    <div class="container">
+        
+        <h1>Stock Analysis Dashboard</h1>
+        <form id="stockForm">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="company1">Select Company 1:</label>
+                    <select id="company1" class="form-control">
+                        <!-- Add options dynamically -->
+                        {% for stock in stock_names %}
+                            <option value="{{ stock }}">{{ stock }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="company2">Select Company 2 (optional):</label>
+                    <select id="company2" class="form-control">
+                        <option value="">None</option>
+                        <!-- Add options dynamically -->
+                        {% for stock in stock_names %}
+                            <option value="{{ stock }}">{{ stock }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="period">Select Period:</label>
+                    <select id="period" class="form-control">
+                        <option value="1D">1 Day</option>
+                        <option value="1W">1 Week</option>
+                        <option value="1M">1 Month</option>
+                        <option value="Lifetime">Lifetime</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6 form-inline">
+                    <label for="show-daily-avg">Show Daily Average:</label>
+                    <input type="checkbox" id="show-daily-avg" class="ml-2">
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="button" id="plotButton" class="btn btn-primary">Trend</button>
+            </div>
+        </form>
+        <img id="plot-image" src="">
+        <div class="form-group">
+            <label for="ranking-period">Select Ranking Period:</label>
+            <select id="ranking-period" class="form-control">
+                <option value="1D">1 Day</option>
+                <option value="1W">1 Week</option>
+                <option value="1M">1 Month</option>
+                <option value="Lifetime">Lifetime</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <button type="button" id="rankingButton" class="btn btn-primary">Show Rankings</button>
+        </div>
+        <div id="ranking"></div>
+        <div class="form-group">
+            <button type="button" id="predictButton" class="btn btn-secondary">Predict Next Week</button>
+        </div>
+        <div id="prediction">
+            <h2>Predicted Prices for Next Week</h2>
+            <ul id="prediction-list"></ul>
+        </div>
+    </div>
+    <div class="cards">
+        <div class="card">
+            <img src="/static/chart.png" alt="Private Finance Services" class="center">
+            <h2>Plot the stock trend!</h2>
+            
+        </div>
+        <div class="card">
+            <img src="/static/analysing.png" alt="Commercial Banking Solutions" class="center">
+            <h2>Analyse the best stocks!</h2>
+           
+        </div>
+        <div class="card">
+            <img src="/static/prediction.png" alt="Financial Markets Research" class="center">
+            <h2>Predict the future value of the stocks!</h2>
+            
+        </div>
+    </div>
+    <script>
+        document.getElementById('plotButton').addEventListener('click', function() {
+            const company1 = document.getElementById('company1').value;
+            const company2 = document.getElementById('company2').value;
+            const period = document.getElementById('period').value;
+            const show_daily_avg = document.getElementById('show-daily-avg').checked;
+
+            fetch('/plot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ company1, company2, period, show_daily_avg })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    const img = document.getElementById('plot-image');
+                    img.src = 'data:image/png;base64,' + data.image;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('rankingButton').addEventListener('click', function() {
+            const period = document.getElementById('ranking-period').value;
+
+            fetch('/ranking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ period })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    const rankingDiv = document.getElementById('ranking');
+                    rankingDiv.innerHTML = '<h2>Stock Rankings</h2>';
+                    const listElement = document.createElement('ul');
+                    data.rankings.forEach((stock, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${index + 1}. ${stock.name}`;
+                        listElement.appendChild(listItem);
+                    });
+                    rankingDiv.appendChild(listElement);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        });
+
+        document.getElementById('predictButton').addEventListener('click', function() {
+            const company = document.getElementById('company1').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ company })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    const predictionList = document.getElementById('prediction-list');
+                    predictionList.innerHTML = '';
+                    data.prices.forEach((price, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Day ${index + 1}: ${price.toFixed(2)}`;
+                        predictionList.appendChild(listItem);
+                    });
+                    document.getElementById('prediction').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+           
